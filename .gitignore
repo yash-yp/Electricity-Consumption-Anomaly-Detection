@@ -1,0 +1,25 @@
+ElectricityTheftDetection/
+describeFile.py
+f1.py
+f4.py
+f3.py
+file4.py
+file3.py
+file1.py
+file2.py
+model1.py
+trx.txt
+.idea
+data.csv
+rbm.py
+preprocessedC.csv
+preprocessedR.csv
+visualization.csv
+1D-Cnn Epochs Results.csv
+2D-CNN Epochs Results.csv
+NN epochs results.csv
+preprocessed.7z
+Smart meters Residential post-trial survey data.csv
+Smart meters Residential pre-trial survey data.csv
+Smart meters SME post-trial survey data.csv
+Smart meters SME pre-trial survey data.csv
