@@ -13,6 +13,8 @@ from sklearn.svm import SVC
 import numpy as np
 from sklearn.model_selection import GridSearchCV
 from imblearn.over_sampling import SMOTE
+from matplotlib import pyplot as plt
+
 
 tf.random.set_seed(1234)
 epochs_number = 1  # number of epochs for the neural networks
@@ -60,7 +62,19 @@ def results(y_test, prediction):
     print("MAE:", mean_absolute_error(y_test, prediction))
     print("F1:", 100 * precision_recall_fscore_support(y_test, prediction)[2])
     print("AUC:", 100 * roc_auc_score(y_test, prediction))
-    print(confusion_matrix(y_test, prediction), "\n")
+    conf_matrix = confusion_matrix(y_test, prediction)
+    fig, ax = plt.subplots(figsize=(7.5, 7.5))
+    fig.dpi = 400
+    ax.matshow(conf_matrix, cmap=plt.cm.Blues, alpha=0.3)
+    for i in range(conf_matrix.shape[0]):
+        for j in range(conf_matrix.shape[1]):
+            ax.text(x=j, y=i,s=conf_matrix[i, j], va='center', ha='center', size='xx-large')
+    
+    plt.xlabel('Predictions', fontsize=18)
+    plt.ylabel('Actuals', fontsize=18)
+    plt.title('Confusion Matrix', fontsize=18)
+    plt.savefig('Confusion_Matrix.png')
+   
 
 def LR(X_train, X_test, y_train, y_test):
     print('Logistic Regression:')
@@ -99,13 +113,6 @@ def RF(X_train, X_test, y_train, y_test):
 
     model = RandomForestClassifier(n_estimators=100, min_samples_leaf=1, max_features='auto',  # max_depth=10,
                                    random_state=0, n_jobs=-1)
-    model.fit(X_train, y_train)
-    prediction = model.predict(X_test)
-    results(y_test, prediction)
-
-
-def SVM(X_train, X_test, y_train, y_test):
-    model = SVC(random_state=0)
     model.fit(X_train, y_train)
     prediction = model.predict(X_test)
     results(y_test, prediction)
