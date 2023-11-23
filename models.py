@@ -16,20 +16,17 @@ from imblearn.over_sampling import SMOTE
 from matplotlib import pyplot as plt
 
 
-tf.random.set_seed(1234)
+tf.random.set_seed(9999)
 
-epochs_number = 10  # number of epochs for the neural networks
-# for ANN epochs_number = 20, for CNN 1D and 2D epochs_number = 10
-test_set_size = 0.1  # percentage of the test size comparing to the whole dataset
-oversampling_flag = 0  # set to 1 to over-sample the minority class
-oversampling_percentage = 0.2  # percentage of the minority class after the oversampling comparing to majority class
-
+epochs_number = 10  
+test_set_size = 0.1 
+oversampling_flag = 0 
+oversampling_percentage = 0.2 
 
 # Definition of functions
 def read_data():
     rawData = pd.read_csv('preprocessedR.csv')
-
-    # Setting the target and dropping the unnecessary columns
+    
     y = rawData[['FLAG']]
     X = rawData.drop(['FLAG', 'CONS_NO'], axis=1)
 
@@ -57,7 +54,6 @@ def read_data():
 
     return X_train, X_test, y_train, y_test
 
-
 def results(y_test, prediction, model_name):
     print("Accuracy", 100 * accuracy_score(y_test, prediction))
     print("RMSE:", mean_squared_error(y_test, prediction, squared=False))
@@ -77,6 +73,29 @@ def results(y_test, prediction, model_name):
     plt.title('Confusion Matrix ' + model_name, fontsize=18)
     plt.savefig('Confusion_Matrix '+ model_name + '.png')
   
+def logistic_regression(X_train, X_test, y_train, y_test):
+    print('Logistic Regression:')    
+    model = LogisticRegression(C=1000, max_iter=1000, n_jobs=-1, solver='newton-cg')
+    model.fit(X_train, y_train)
+    prediction = model.predict(X_test)
+    results(y_test, prediction, "Logistic_Regression")
+
+
+def decision_tree(X_train, X_test, y_train, y_test):
+    print('Decision Tree:')
+    model = DecisionTreeClassifier(random_state=0)
+    model.fit(X_train, y_train)
+    prediction = model.predict(X_test)
+    results(y_test, prediction, "Decision_Tree")
+
+
+def random_forest(X_train, X_test, y_train, y_test):
+    print('Random Forest:')
+    model = RandomForestClassifier(n_estimators=100, min_samples_leaf=1, max_features='auto',  # max_depth=10,
+                                   random_state=0, n_jobs=-1)
+    model.fit(X_train, y_train)
+    prediction = model.predict(X_test)
+    results(y_test, prediction, "Random_Forest")
 
 def artificial_neural_network_(X_train, X_test, y_train, y_test):
     print('Artificial Neural Network:')
@@ -158,7 +177,6 @@ def convolutional_neural_network_2D(X_train, X_test, y_train, y_test):
 
     # Model creation
     model = Sequential()
-
     model.add(Conv2D(kernel_size=(7,2), filters=32, input_shape=input_shape[1:], activation='relu',
                      data_format='channels_last'))
     model.add(MaxPooling2D((7,2)))
@@ -171,67 +189,20 @@ def convolutional_neural_network_2D(X_train, X_test, y_train, y_test):
     model.compile(loss=keras.losses.binary_crossentropy,
                   optimizer='adam',
                   metrics=['accuracy'])
-    # model.summary()
-    #     model.fit(X_train_reshaped, y_train, validation_split=0.1, epochs=i, shuffle=False, verbose=0)
+
     model.fit(X_train_reshaped, y_train, validation_split=0.1, epochs=epochs_number, shuffle=False, verbose=1)
 
-    # prediction = model.predict_classes(X_test)
-    # prediction = model.predict_classes(X_test_reshaped)
     prediction = (model.predict(X_test_reshaped) > 0.5).astype("int32")    
     model.summary()
     results(y_test, prediction, "CNN 2D")
 
-
-
-def logistic_regression(X_train, X_test, y_train, y_test):
-    print('Logistic Regression:')
-    '''
-    # Parameters selection 
-    param_grid = {'C': [0.1,1,10,100],'solver': ['newton-cg', 'lbfgs']}
-    grid = GridSearchCV(LogisticRegression(max_iter=1000,random_state=0), param_grid=param_grid, n_jobs=-1)
-    grid.fit(X_train, y_train)
-    df = pd.DataFrame(grid.cv_results_)
-    print(df[['param_C', 'param_solver', 'mean_test_score', 'rank_test_score']])
-    '''
-    model = LogisticRegression(C=1000, max_iter=1000, n_jobs=-1, solver='newton-cg')
-    model.fit(X_train, y_train)
-    prediction = model.predict(X_test)
-    results(y_test, prediction, "Logistic_Regression")
-
-
-def decision_tree(X_train, X_test, y_train, y_test):
-    print('Decision Tree:')
-    model = DecisionTreeClassifier(random_state=0)
-    model.fit(X_train, y_train)
-    prediction = model.predict(X_test)
-    results(y_test, prediction, "Decision_Tree")
-
-
-def random_forest(X_train, X_test, y_train, y_test):
-    print('Random Forest:')
-    '''
-    # Parameters selection 
-    param_grid = {'n_estimators':[10,100,1000]}
-    grid = GridSearchCV(RandomForestClassifier(random_state=0), param_grid=param_grid, n_jobs=-1)
-    grid.fit(X_train, y_train)
-    df = pd.DataFrame(grid.cv_results_)
-    print(df[['param_criterion', 'mean_test_score', 'rank_test_score']])
-    '''
-
-    model = RandomForestClassifier(n_estimators=100, min_samples_leaf=1, max_features='auto',  # max_depth=10,
-                                   random_state=0, n_jobs=-1)
-    model.fit(X_train, y_train)
-    prediction = model.predict(X_test)
-    results(y_test, prediction, "Random_Forest")
-
-
 # Main 
 X_train, X_test, y_train, y_test = read_data()
-# Uncommnent the model which has to be run
-# artificial_neural_network_(X_train, X_test, y_train, y_test)
-# convolutional_neural_network_1D(X_train, X_test, y_train, y_test)
-# convolutional_neural_network_2D(X_train, X_test, y_train, y_test)
+
+
 # random_forest(X_train, X_test, y_train, y_test)
 # logistic_regression(X_train, X_test, y_train, y_test)
 # decision_tree(X_train, X_test, y_train, y_test)
-
+# artificial_neural_network_(X_train, X_test, y_train, y_test)
+# convolutional_neural_network_1D(X_train, X_test, y_train, y_test)
+# convolutional_neural_network_2D(X_train, X_test, y_train, y_test)
