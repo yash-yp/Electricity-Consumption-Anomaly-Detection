@@ -78,7 +78,7 @@ def results(y_test, prediction, model_name):
     plt.savefig('Confusion_Matrix '+ model_name + '.png')
   
 
-def ANN(X_train, X_test, y_train, y_test):
+def artificial_neural_network_(X_train, X_test, y_train, y_test):
     print('Artificial Neural Network:')
 
     # Model creation
@@ -102,7 +102,7 @@ def ANN(X_train, X_test, y_train, y_test):
     results(y_test, prediction, "ANN")
 
 
-def CNN1D(X_train, X_test, y_train, y_test):
+def convolutional_neural_network_1D(X_train, X_test, y_train, y_test):
     print('1D - Convolutional Neural Network:')
 
     # Transforming the dataset into tensors
@@ -131,7 +131,7 @@ def CNN1D(X_train, X_test, y_train, y_test):
     results(y_test, prediction, "CNN 1D")
 
 
-def CNN2D(X_train, X_test, y_train, y_test):
+def convolutional_neural_network_2D(X_train, X_test, y_train, y_test):
     print('2D - Convolutional Neural Network:')
 
     # Transforming every row of the train set into a 2D array and then into a tensor
@@ -183,7 +183,7 @@ def CNN2D(X_train, X_test, y_train, y_test):
 
 
 
-def LR(X_train, X_test, y_train, y_test):
+def logistic_regression(X_train, X_test, y_train, y_test):
     print('Logistic Regression:')
     '''
     # Parameters selection 
@@ -199,7 +199,7 @@ def LR(X_train, X_test, y_train, y_test):
     results(y_test, prediction, "Logistic_Regression")
 
 
-def DT(X_train, X_test, y_train, y_test):
+def decision_tree(X_train, X_test, y_train, y_test):
     print('Decision Tree:')
     model = DecisionTreeClassifier(random_state=0)
     model.fit(X_train, y_train)
@@ -207,7 +207,7 @@ def DT(X_train, X_test, y_train, y_test):
     results(y_test, prediction, "Decision_Tree")
 
 
-def RF(X_train, X_test, y_train, y_test):
+def random_forest(X_train, X_test, y_train, y_test):
     print('Random Forest:')
     '''
     # Parameters selection 
@@ -228,10 +228,10 @@ def RF(X_train, X_test, y_train, y_test):
 # Main 
 X_train, X_test, y_train, y_test = read_data()
 # Uncommnent the model which has to be run
-# ANN(X_train, X_test, y_train, y_test)
-# CNN1D(X_train, X_test, y_train, y_test)
-# CNN2D(X_train, X_test, y_train, y_test)
-# RF(X_train, X_test, y_train, y_test)
-# LR(X_train, X_test, y_train, y_test)
-# DT(X_train, X_test, y_train, y_test)
+# artificial_neural_network_(X_train, X_test, y_train, y_test)
+# convolutional_neural_network_1D(X_train, X_test, y_train, y_test)
+# convolutional_neural_network_2D(X_train, X_test, y_train, y_test)
+# random_forest(X_train, X_test, y_train, y_test)
+# logistic_regression(X_train, X_test, y_train, y_test)
+# decision_tree(X_train, X_test, y_train, y_test)
 
