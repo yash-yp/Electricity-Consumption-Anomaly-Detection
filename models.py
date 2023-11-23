@@ -5,7 +5,7 @@ from sklearn.metrics import accuracy_score, mean_absolute_error, mean_squared_er
 from tensorflow.keras import Sequential
 import tensorflow as tf
 from tensorflow import keras
-from tensorflow.python.keras.layers import Dense, Conv1D, Flatten, Conv2D
+from tensorflow.python.keras.layers import Dense, Conv1D, Flatten, Conv2D, MaxPooling1D,MaxPooling2D
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.tree import DecisionTreeClassifier
@@ -17,7 +17,9 @@ from matplotlib import pyplot as plt
 
 
 tf.random.set_seed(1234)
-epochs_number = 1  # number of epochs for the neural networks
+
+epochs_number = 10  # number of epochs for the neural networks
+# for ANN epochs_number = 20, for CNN 1D and 2D epochs_number = 10
 test_set_size = 0.1  # percentage of the test size comparing to the whole dataset
 oversampling_flag = 0  # set to 1 to over-sample the minority class
 oversampling_percentage = 0.2  # percentage of the minority class after the oversampling comparing to majority class
@@ -56,7 +58,7 @@ def read_data():
     return X_train, X_test, y_train, y_test
 
 
-def results(y_test, prediction):
+def results(y_test, prediction, model_name):
     print("Accuracy", 100 * accuracy_score(y_test, prediction))
     print("RMSE:", mean_squared_error(y_test, prediction, squared=False))
     print("MAE:", mean_absolute_error(y_test, prediction))
@@ -72,9 +74,114 @@ def results(y_test, prediction):
     
     plt.xlabel('Predictions', fontsize=18)
     plt.ylabel('Actuals', fontsize=18)
-    plt.title('Confusion Matrix', fontsize=18)
-    plt.savefig('Confusion_Matrix.png')
-   
+    plt.title('Confusion Matrix ' + model_name, fontsize=18)
+    plt.savefig('Confusion_Matrix '+ model_name + '.png')
+  
+
+def ANN(X_train, X_test, y_train, y_test):
+    print('Artificial Neural Network:')
+
+    # Model creation
+    model = Sequential()
+    model.add(Dense(1000, input_dim=1034, activation='relu'))
+    model.add(Dense(100, activation='relu'))
+    model.add(Dense(100, activation='relu'))
+    model.add(Dense(100, activation='relu'))
+    model.add(Dense(10, activation='relu'))
+    model.add(Dense(1, activation='sigmoid'))
+
+    model.compile(loss=keras.losses.binary_crossentropy,
+                  optimizer='adam',
+                  metrics=['accuracy'])
+
+    # model.fit(X_train, y_train, validation_split=0, epochs=i, shuffle=True, verbose=0)
+    model.fit(X_train, y_train, validation_split=0, epochs=epochs_number, shuffle=True, verbose=1)
+    temp_prediction = model.predict(X_test)
+    prediction=(model.predict(X_test) > 0.5).astype("int32")
+    model.summary()
+    results(y_test, prediction, "ANN")
+
+
+def CNN1D(X_train, X_test, y_train, y_test):
+    print('1D - Convolutional Neural Network:')
+
+    # Transforming the dataset into tensors
+    X_train = X_train.to_numpy().reshape(X_train.shape[0], X_train.shape[1], 1)
+    X_test = X_test.to_numpy().reshape(X_test.shape[0], X_test.shape[1], 1)
+
+    # Model creation
+    model = Sequential()
+    model.add(Conv1D(100, kernel_size=7, input_shape=(1034, 1), activation='relu'))
+    model.add(MaxPooling1D(pool_size=7))
+    model.add(Flatten())
+    model.add(Dense(100, activation='relu'))
+    model.add(Dense(100, activation='relu'))
+    model.add(Dense(64, activation='relu'))
+    model.add(Dense(1, activation='sigmoid'))
+
+    model.compile(loss=keras.losses.binary_crossentropy,
+                  optimizer='adam',
+                  metrics=['accuracy'])
+
+    # model.fit(X_train, y_train, epochs=1, validation_split=0.1, shuffle=False, verbose=1)
+    model.fit(X_train, y_train, epochs=epochs_number, validation_split=0, shuffle=False, verbose=1)
+    # prediction = model.predict_step(X_test)
+    prediction = (model.predict(X_test) > 0.5).astype("int32")
+    model.summary()
+    results(y_test, prediction, "CNN 1D")
+
+
+def CNN2D(X_train, X_test, y_train, y_test):
+    print('2D - Convolutional Neural Network:')
+
+    # Transforming every row of the train set into a 2D array and then into a tensor
+    n_array_X_train = X_train.to_numpy()
+    n_array_X_train_extended = np.hstack((n_array_X_train, np.zeros(
+        (n_array_X_train.shape[0], 2))))  # adding two empty columns in order to make the number of columns
+    # an exact multiple of 7
+    week = []
+    for i in range(n_array_X_train_extended.shape[0]):
+        a = np.reshape(n_array_X_train_extended[i], (-1, 7, 1))
+        week.append(a)
+    X_train_reshaped = np.array(week)
+
+    # Transforming every row of the train set into a 2D array and then into a tensor
+    n_array_X_test = X_test.to_numpy()  # X_test to 2D - array
+    n_array_X_train_extended = np.hstack((n_array_X_test, np.zeros((n_array_X_test.shape[0], 2))))
+    week2 = []
+    for i in range(n_array_X_train_extended.shape[0]):
+        b = np.reshape(n_array_X_train_extended[i], (-1, 7, 1))
+        week2.append(b)
+    X_test_reshaped = np.array(week2)
+
+    input_shape = (1, 148, 7, 1)  # input shape of the tensor
+
+    # Model creation
+    model = Sequential()
+
+    model.add(Conv2D(kernel_size=(7,2), filters=32, input_shape=input_shape[1:], activation='relu',
+                     data_format='channels_last'))
+    model.add(MaxPooling2D((7,2)))
+    model.add(Flatten())
+    model.add(Dense(100, activation='relu'))
+    model.add(Dense(100, activation='relu'))
+    model.add(Dense(64, activation='relu'))
+    model.add(Dense(1, activation='sigmoid'))
+
+    model.compile(loss=keras.losses.binary_crossentropy,
+                  optimizer='adam',
+                  metrics=['accuracy'])
+    # model.summary()
+    #     model.fit(X_train_reshaped, y_train, validation_split=0.1, epochs=i, shuffle=False, verbose=0)
+    model.fit(X_train_reshaped, y_train, validation_split=0.1, epochs=epochs_number, shuffle=False, verbose=1)
+
+    # prediction = model.predict_classes(X_test)
+    # prediction = model.predict_classes(X_test_reshaped)
+    prediction = (model.predict(X_test_reshaped) > 0.5).astype("int32")    
+    model.summary()
+    results(y_test, prediction, "CNN 2D")
+
+
 
 def LR(X_train, X_test, y_train, y_test):
     print('Logistic Regression:')
@@ -89,7 +196,7 @@ def LR(X_train, X_test, y_train, y_test):
     model = LogisticRegression(C=1000, max_iter=1000, n_jobs=-1, solver='newton-cg')
     model.fit(X_train, y_train)
     prediction = model.predict(X_test)
-    results(y_test, prediction)
+    results(y_test, prediction, "Logistic_Regression")
 
 
 def DT(X_train, X_test, y_train, y_test):
@@ -97,7 +204,7 @@ def DT(X_train, X_test, y_train, y_test):
     model = DecisionTreeClassifier(random_state=0)
     model.fit(X_train, y_train)
     prediction = model.predict(X_test)
-    results(y_test, prediction)
+    results(y_test, prediction, "Decision_Tree")
 
 
 def RF(X_train, X_test, y_train, y_test):
@@ -115,13 +222,15 @@ def RF(X_train, X_test, y_train, y_test):
                                    random_state=0, n_jobs=-1)
     model.fit(X_train, y_train)
     prediction = model.predict(X_test)
-    results(y_test, prediction)
+    results(y_test, prediction, "Random_Forest")
 
 
 # Main 
 X_train, X_test, y_train, y_test = read_data()
-
-
+# Uncommnent the model which has to be run
+# ANN(X_train, X_test, y_train, y_test)
+# CNN1D(X_train, X_test, y_train, y_test)
+# CNN2D(X_train, X_test, y_train, y_test)
 # RF(X_train, X_test, y_train, y_test)
 # LR(X_train, X_test, y_train, y_test)
 # DT(X_train, X_test, y_train, y_test)
