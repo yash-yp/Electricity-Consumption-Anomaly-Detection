@@ -1,4 +1,4 @@
-# Electricity-Fraud-Detection
+# Electricity-Consumption-Anomaly-Detection
 
 The repository contains ML models for detection of electricity fraud. 
 
@@ -7,8 +7,8 @@ The repository contains ML models for detection of electricity fraud.
 1.) Import the project on [Google Colab](https://colab.research.google.com/)
 
 ```
-!git clone https://github.com/yash-yp/Electricity-Fraud-Detection
-!mv /content/Electricity-Fraud-Detection/* ./
+!git clone https://github.com/yash-yp/Electricity-Consumption-Anomaly-Detection
+!mv /content/Electricity-Consumption-Anomaly-Detection/* ./
 ```
 
 2.) Unzip the dataset
